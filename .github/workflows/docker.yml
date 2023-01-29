@@ -1,0 +1,28 @@
+name: Build Image
+
+on:
+  push:
+    branches:
+      - '**'
+    tags:
+      - '**'
+  pull_request:
+env:
+  IMAGE_NAME: "sacd-extract"
+
+jobs:
+  build-image:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v3.3.0
+
+      - uses: cachix/install-nix-action@v18
+        with:
+          nix_path: nixpkgs=channel:nixos-unstable
+      
+      - run: sudo apt-get update; sudo apt-get -y install skopeo
+
+      - run: nix build .#docker
+      
+      - run: skopeo copy docker-archive:result docker://ghcr.io/jmmaloney4/git-annex:latest --dest-creds ghcr.io/jmmaloney4:${{ secrets.GITHUB_TOKEN }}
