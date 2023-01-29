@@ -29,6 +29,12 @@
           docker = with final; pkgs.dockerTools.buildLayeredImage {
             name = "sacd-extract";
             contents = [
+              pkgs.nix
+              pkgs.bashInteractive
+              pkgs.coreutils-full
+              pkgs.cacert.out
+              pkgs.iana-etc
+              
               sacd-extract
             ];
           };
