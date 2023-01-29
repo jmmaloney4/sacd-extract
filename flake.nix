@@ -25,11 +25,19 @@
               mv sacd_extract $out/bin
             '';
           };
+
+          docker = with final; pkgs.dockerTools.buildLayeredImage {
+            name = "sacd-extract";
+            contents = [
+              sacd-extract
+            ];
+          };
         };
 
         packages = forAllSystems (system:
           {
             inherit (nixpkgsFor.${system}) sacd-extract;
+            inherit (nixpkgsFor.${system}) docker;
           });
 
         defaultPackage = forAllSystems (system: self.packages.${system}.sacd-extract);
