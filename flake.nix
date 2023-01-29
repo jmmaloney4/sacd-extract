@@ -13,8 +13,17 @@
         overlay = final: prev: {
           sacd-extract = with final; stdenv.mkDerivation rec {
             name = "sacd-extract";
-            src = ./tools/sacd_extract;
+            src = ./.;
             nativeBuildInputs = [ cmake libxml2 libiconv ];
+            configurePhase = ''
+              cd ./tools/sacd_extract
+              cmake .
+            '';
+            buildPhase = "make -j $NIX_BUILD_CORES";
+            installPhase = ''
+              mkdir -p $out/bin
+              mv sacd_extract $out/bin
+            '';
           };
         };
 
