@@ -1,0 +1,26 @@
+{
+  "enabled": true,
+  "timezone": "America/Chicago",
+  "extends": ["config:base"],
+  "prHourlyLimit": 0,
+  "rebaseWhen": "behind-base-branch",
+  "dependencyDashboard": true,
+  "dependencyDashboardTitle": "Renovate Dashboard",
+  "docker": {
+    "enabled": true
+  },
+  "packageRules": [
+    {
+      "matchPackagePatterns": ["*"],
+      "automerge": true
+    }
+  ],
+  "lockFileMaintenance": {
+    "enabled": true,
+    "extends": ["schedule:daily"],
+    "automerge": true
+  },
+  "nix": {
+    "enabled": true
+  }
+}
