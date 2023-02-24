@@ -1,5 +1,6 @@
 name: Build Image
-
+permissions:
+  packages: write
 on:
   push:
     branches:
