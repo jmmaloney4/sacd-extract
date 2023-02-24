@@ -1,51 +1,51 @@
 {
   inputs.nixpkgs.url = "nixpkgs/nixos-unstable";
+  inputs.flake-utils.url = "github:numtide/flake-utils";
 
-  outputs = { self, nixpkgs }:
+  outputs = { self, nixpkgs, flake-utils }: flake-utils.lib.eachSystem flake-utils.lib.allSystems (system: 
     let
-      supportedSystems = [ "x86_64-linux" "x86_64-darwin" "aarch64-linux" "aarch64-darwin" ];
+      # supportedSystems = [ "x86_64-linux" "x86_64-darwin" "aarch64-linux" "aarch64-darwin" ];
       # Helper function to generate an attrset '{ x86_64-linux = f "x86_64-linux"; ... }'.
-      forAllSystems = nixpkgs.lib.genAttrs supportedSystems;
+      # forAllSystems = nixpkgs.lib.genAttrs supportedSystems;
       # Nixpkgs instantiated for supported system types.
-      nixpkgsFor = forAllSystems (system: import nixpkgs { inherit system; overlays = [ self.overlay ]; });
+      # nixpkgsFor = forAllSystems (system: import nixpkgs { inherit system; overlays = [ self.overlay ]; });
+      pkgs = import nixpkgs { inherit system; };
     in
-      {
-        overlay = final: prev: {
-          sacd-extract = with final; stdenv.mkDerivation rec {
-            name = "sacd-extract";
-            src = ./.;
-            nativeBuildInputs = [ cmake libxml2 libiconv ];
-            configurePhase = ''
-              cd ./tools/sacd_extract
-              cmake .
-            '';
-            buildPhase = "make -j $NIX_BUILD_CORES";
-            installPhase = ''
-              mkdir -p $out/bin
-              mv sacd_extract $out/bin
-            '';
-          };
+      rec {
+        packages = rec {
+          sacd-extract = pkgs.stdenv.mkDerivation rec {
+              name = "sacd_extract";
+              src = ./.;
+              nativeBuildInputs = with pkgs; [ cmake libxml2 libiconv ];
+              configurePhase = ''
+                cd ./tools/sacd_extract
+                cmake .
+              '';
+              buildPhase = "make -j $NIX_BUILD_CORES";
+              installPhase = ''
+                mkdir -p $out/bin
+                mv sacd_extract $out/bin
+              '';
+            };
 
-          docker = with final; pkgs.dockerTools.buildLayeredImage {
-            name = "sacd-extract";
-            contents = [
-              pkgs.nix
-              pkgs.bashInteractive
-              pkgs.coreutils-full
-              pkgs.cacert.out
-              pkgs.iana-etc
-              
-              sacd-extract
-            ];
-          };
+          docker = pkgs.dockerTools.buildLayeredImage {
+              name = "sacd_extract";
+              contents = with pkgs; [
+                nix
+                bashInteractive
+                coreutils-full
+                cacert.out
+                iana-etc
+                
+                sacd-extract
+              ];
+            };
+          default = sacd-extract;
         };
 
-        packages = forAllSystems (system:
-          {
-            inherit (nixpkgsFor.${system}) sacd-extract;
-            inherit (nixpkgsFor.${system}) docker;
-          });
-
-        defaultPackage = forAllSystems (system: self.packages.${system}.sacd-extract);
-      };
+        apps = flake-utils.lib.mkApp {
+          drv = packages.default;
+          exePath = "/bin/sacd_extract";
+        };        
+      });
 }
