@@ -1,3 +1,7 @@
+Upstream: [sacd-ripper/sacd-ripper](https://github.com/sacd-ripper/sacd-ripper)
+This version is modified to use a flake to compile the sacd_extract sub-tool.
+
+----
 
    DISCLAIMER.  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND
    CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING,
