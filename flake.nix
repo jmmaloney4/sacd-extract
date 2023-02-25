@@ -1,10 +1,18 @@
 {
-  inputs.nixpkgs.url = "nixpkgs/nixos-unstable";
+  # if unstable doesn't have working cross gcc, maybe stable does.
+  inputs.nixpkgs.url = "nixpkgs/nixos-22.11";
+
+  # inputs.nixpkgs.url = "nixpkgs/nixos-unstable";
   inputs.flake-utils.url = "github:numtide/flake-utils";
 
   outputs = { self, nixpkgs, flake-utils }: flake-utils.lib.eachSystem flake-utils.lib.allSystems (system: 
     let
-      # supportedSystems = [ "x86_64-linux" "x86_64-darwin" "aarch64-linux" "aarch64-darwin" ];
+      supportedSystems = [ 
+        "x86_64-linux"
+        # "x86_64-darwin"
+        "aarch64-linux"
+        "aarch64-darwin"
+      ];
       # Helper function to generate an attrset '{ x86_64-linux = f "x86_64-linux"; ... }'.
       # forAllSystems = nixpkgs.lib.genAttrs supportedSystems;
       # Nixpkgs instantiated for supported system types.
@@ -12,6 +20,23 @@
       pkgs = import nixpkgs { inherit system; };
     in 
       rec {
+        crossImages = pkgs.lib.genAttrs supportedSystems (crossSystem: 
+          let
+            localSystem = system;
+            crossPkgs = import nixpkgs { inherit localSystem crossSystem; };
+          in pkgs.dockerTools.buildLayeredImage {
+              name = "sacd_extract";
+              contents = with crossPkgs; [
+                nix
+                bashInteractive
+                coreutils-full
+                cacert.out
+                iana-etc
+                
+                # sacd-extract
+              ];
+            });
+
         packages = rec {
           sacd-extract = pkgs.stdenv.mkDerivation rec {
               name = "sacd_extract";
@@ -41,6 +66,9 @@
               ];
             };
           default = sacd-extract;
+
+
+          crossDocker = pkgs.dockerTools.mergeImages (pkgs.lib.attrValues crossImages);
         };
 
         apps = flake-utils.lib.mkApp {
