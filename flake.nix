@@ -1,8 +1,5 @@
 {
-  # if unstable doesn't have working cross gcc, maybe stable does.
-  inputs.nixpkgs.url = "nixpkgs/nixos-22.11";
-
-  # inputs.nixpkgs.url = "nixpkgs/nixos-unstable";
+  inputs.nixpkgs.url = "nixpkgs/nixos-unstable";
   inputs.flake-utils.url = "github:numtide/flake-utils";
 
   outputs = { self, nixpkgs, flake-utils }: flake-utils.lib.eachSystem flake-utils.lib.allSystems (system: 
