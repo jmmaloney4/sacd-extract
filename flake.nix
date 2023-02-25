@@ -10,7 +10,7 @@
       # Nixpkgs instantiated for supported system types.
       # nixpkgsFor = forAllSystems (system: import nixpkgs { inherit system; overlays = [ self.overlay ]; });
       pkgs = import nixpkgs { inherit system; };
-    in
+    in 
       rec {
         packages = rec {
           sacd-extract = pkgs.stdenv.mkDerivation rec {
@@ -46,6 +46,46 @@
         apps = flake-utils.lib.mkApp {
           drv = packages.default;
           exePath = "/bin/sacd_extract";
-        };        
+        };
+
+        cross = flake-utils.lib.eachSystem (pkgs.lib.filter (s: s != system) flake-utils.lib.allSystems) (crossSystem: 
+          let
+            localSystem = system;
+            crossPkgs = import nixpkgs { inherit localSystem crossSystem; };
+            tr = builtins.trace ''Local: ${localSystem} Cross: ${crossSystem}'';
+          in {
+            packages = rec {
+              sacd-extract = crossPkgs.stdenv.mkDerivation rec {
+                  name = "sacd_extract";
+                  src = ./.;
+                  nativeBuildInputs = with crossPkgs; [ cmake libxml2 libiconv ];
+                  configurePhase = ''
+                    cd ./tools/sacd_extract
+                    cmake .
+                  '';
+                  buildPhase = "make -j $NIX_BUILD_CORES";
+                  installPhase = ''
+                    mkdir -p $out/bin
+                    mv sacd_extract $out/bin
+                  '';
+                };
+
+              # docker = pkgs.dockerTools.buildLayeredImage {
+              #     name = "sacd_extract";
+              #     contents = with pkgs; [
+              #       nix
+              #       bashInteractive
+              #       coreutils-full
+              #       cacert.out
+              #       iana-etc
+                    
+              #       sacd-extract
+              #     ];
+              #   };
+              # default = sacd-extract;
+            };
+          }
+        );
+
       });
 }
