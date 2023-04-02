@@ -3,3 +3,5 @@ builds:
   - 'packages.aarch64-darwin.*'
   - 'packages.x86_64-linux.*'
   - 'packages.aarch64-linux.*'
+  - 'cross.packages.x86_64-linux.*'
+  - 'cross.packages.aarch64-linux.*'
