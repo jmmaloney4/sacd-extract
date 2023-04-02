@@ -82,7 +82,7 @@
                 nativeBuildInputs = with crossPkgs; [ cmake libxml2 libiconv ];
                 configurePhase = ''
                   cd ./tools/sacd_extract
-                  cmake .
+                  ${pkgs.cmake}/bin/cmake .
                 '';
                 buildPhase = "make -j $NIX_BUILD_CORES";
                 installPhase = ''
