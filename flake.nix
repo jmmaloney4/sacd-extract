@@ -2,7 +2,7 @@
   inputs.nixpkgs.url = "github:nixos/nixpkgs/nixos-unstable";
   inputs.flake-utils.url = "github:numtide/flake-utils";
 
-  outputs = { self, nixpkgs, flake-utils }: flake-utils.lib.eachSystem flake-utils.lib.allSystems (system: 
+  outputs = { self, nixpkgs, flake-utils }: flake-utils.lib.eachDefaultSystem (system: 
     let
       crossSystems = [ 
         "x86_64-linux"
@@ -62,7 +62,6 @@
             };
           default = sacd-extract;
 
-
           crossDocker = pkgs.dockerTools.mergeImages (pkgs.lib.attrValues crossImages);
         };
 
@@ -71,7 +70,7 @@
           exePath = "/bin/sacd_extract";
         };
 
-        crossPackages = flake-utils.lib.eachSystem crossSystems (crossSystem: 
+        crossPackages = pkgs.lib.genAttrs crossSystems (crossSystem: 
           let
             localSystem = system;
             crossPkgs = import nixpkgs { inherit localSystem crossSystem; };
