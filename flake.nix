@@ -71,42 +71,40 @@
           exePath = "/bin/sacd_extract";
         };
 
-        cross = flake-utils.lib.eachSystem crossSystems (crossSystem: 
+        crossPackages = flake-utils.lib.eachSystem crossSystems (crossSystem: 
           let
             localSystem = system;
             crossPkgs = import nixpkgs { inherit localSystem crossSystem; };
             tr = builtins.trace ''Local: ${localSystem} Cross: ${crossSystem}'';
-          in {
-            packages = rec {
-              sacd-extract = crossPkgs.stdenv.mkDerivation rec {
-                  name = "sacd_extract";
-                  src = ./.;
-                  nativeBuildInputs = with crossPkgs; [ cmake libxml2 libiconv ];
-                  configurePhase = ''
-                    cd ./tools/sacd_extract
-                    cmake .
-                  '';
-                  buildPhase = "make -j $NIX_BUILD_CORES";
-                  installPhase = ''
-                    mkdir -p $out/bin
-                    mv sacd_extract $out/bin
-                  '';
-                };
+          in rec {
+            sacd-extract = crossPkgs.stdenv.mkDerivation rec {
+                name = "sacd_extract";
+                src = ./.;
+                nativeBuildInputs = with crossPkgs; [ cmake libxml2 libiconv ];
+                configurePhase = ''
+                  cd ./tools/sacd_extract
+                  cmake .
+                '';
+                buildPhase = "make -j $NIX_BUILD_CORES";
+                installPhase = ''
+                  mkdir -p $out/bin
+                  mv sacd_extract $out/bin
+                '';
+              };
 
-              # docker = pkgs.dockerTools.buildLayeredImage {
-              #     name = "sacd_extract";
-              #     contents = with pkgs; [
-              #       nix
-              #       bashInteractive
-              #       coreutils-full
-              #       cacert.out
-              #       iana-etc
-                    
-              #       sacd-extract
-              #     ];
-              #   };
-              # default = sacd-extract;
-            };
+            # docker = pkgs.dockerTools.buildLayeredImage {
+            #     name = "sacd_extract";
+            #     contents = with pkgs; [
+            #       nix
+            #       bashInteractive
+            #       coreutils-full
+            #       cacert.out
+            #       iana-etc
+                  
+            #       sacd-extract
+            #     ];
+            #   };
+            # default = sacd-extract;
           }
         );
 
