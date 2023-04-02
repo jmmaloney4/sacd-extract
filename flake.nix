@@ -4,11 +4,9 @@
 
   outputs = { self, nixpkgs, flake-utils }: flake-utils.lib.eachSystem flake-utils.lib.allSystems (system: 
     let
-      supportedSystems = [ 
+      crossSystems = [ 
         "x86_64-linux"
         "aarch64-linux"
-        # "x86_64-darwin"
-        # "aarch64-darwin"
       ];
       # Helper function to generate an attrset '{ x86_64-linux = f "x86_64-linux"; ... }'.
       # forAllSystems = nixpkgs.lib.genAttrs supportedSystems;
@@ -17,7 +15,7 @@
       pkgs = import nixpkgs { inherit system; };
     in 
       rec {
-        crossImages = pkgs.lib.genAttrs supportedSystems (crossSystem: 
+        crossImages = pkgs.lib.genAttrs crossSystems (crossSystem: 
           let
             localSystem = system;
             crossPkgs = import nixpkgs { inherit localSystem crossSystem; };
@@ -30,7 +28,7 @@
                 cacert.out
                 iana-etc
                 
-                # sacd-extract
+                cross.packages.${crossSystem}.sacd-extract
               ];
             });
 
@@ -73,7 +71,7 @@
           exePath = "/bin/sacd_extract";
         };
 
-        cross = flake-utils.lib.eachSystem (pkgs.lib.filter (s: s != system) flake-utils.lib.allSystems) (crossSystem: 
+        cross = flake-utils.lib.eachSystem crossSystems (crossSystem: 
           let
             localSystem = system;
             crossPkgs = import nixpkgs { inherit localSystem crossSystem; };
