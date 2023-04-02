@@ -1,3 +1,4 @@
 builds:
   inputs:
   - 'packages.*'
+  - 'packages.aarch64-darwin.*'
