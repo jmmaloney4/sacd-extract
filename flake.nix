@@ -28,7 +28,7 @@
                 cacert.out
                 iana-etc
                 
-                cross.packages.${crossSystem}.sacd-extract
+                crossPackages.${crossSystem}.sacd-extract
               ];
             });
 
